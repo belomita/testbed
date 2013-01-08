@@ -30,7 +30,7 @@ func (t Table) Less(i, j int) bool {
 func main() {
 	t1 := time.Now()
 
-	filename := "table.txt"
+	filename := os.Args[1]
 	keys := []int{0, 1, 2}
 	f, _ := os.Open(filename)
 	defer f.Close()

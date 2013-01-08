@@ -10,7 +10,7 @@ import (
 
 const (
 	STRING_LEN int = 8
-	LINE_NUM   int = 1000000
+	LINE_NUM   int = 10
 	COL_NUM    int = 6
 )
 
