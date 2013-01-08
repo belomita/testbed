@@ -1,18 +1,19 @@
 package main
 
 import (
-	"os"
-	"time"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
+	"time"
 )
 
 const (
 	STRING_LEN int = 8
-	LINE_NUM int = 1000000
-	COL_NUM int = 6
+	LINE_NUM   int = 1000000
+	COL_NUM    int = 6
 )
+
 func main() {
 	t1 := time.Now()
 	slice := make([]byte, STRING_LEN)
@@ -28,7 +29,7 @@ func main() {
 		//lines[line] = strings.Join(cols, "\t")
 		fmt.Println(strings.Join(cols, "\t"))
 	}
-	
+
 	t2 := time.Now()
 	fmt.Fprintf(os.Stderr, "Time: %v.", t2.Sub(t1))
 }

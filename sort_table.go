@@ -1,23 +1,23 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"os"
 	"sort"
-	"time"
-	"bufio"
 	"strings"
-	"fmt"
+	"time"
 )
 
 type Row []string
 type Table struct {
-	Rows  []Row
-	Keys  []int
+	Rows []Row
+	Keys []int
 }
 
-func (t Table) Len() int { return len(t.Rows) }
+func (t Table) Len() int      { return len(t.Rows) }
 func (t Table) Swap(i, j int) { t.Rows[i], t.Rows[j] = t.Rows[j], t.Rows[i] }
-func (t Table) Less(i, j int) bool { 
+func (t Table) Less(i, j int) bool {
 	first, second := t.Rows[i], t.Rows[j]
 	for _, k := range t.Keys {
 		if first[k] != second[k] {
@@ -29,13 +29,13 @@ func (t Table) Less(i, j int) bool {
 
 func main() {
 	t1 := time.Now()
-	
+
 	filename := "table.txt"
 	keys := []int{0, 1, 2}
 	f, _ := os.Open(filename)
 	defer f.Close()
 	r := bufio.NewReader(f)
-	
+
 	table := new(Table)
 	table.Keys = keys
 	// Read from file
@@ -55,12 +55,5 @@ func main() {
 	for _, v := range table.Rows {
 		fmt.Printf(strings.Join(v, "\t"))
 	}
-	
 
 }
-
-
-
-
-
-
