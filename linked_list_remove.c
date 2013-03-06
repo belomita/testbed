@@ -10,7 +10,7 @@ typedef struct point {
 
 typedef struct node {
     struct node* next;
-    // Here use pointer to pointer just for test remove function
+    // Here use pointer to point just for testing remove function
     point* pos;
 }node;
 
