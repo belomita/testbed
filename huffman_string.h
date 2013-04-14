@@ -3,7 +3,8 @@
 
 #include <string>
 #include <map>
-#include <queue>
+#include <vector>
+//#include <queue>
 
 struct HuffmanNode
 {

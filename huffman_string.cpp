@@ -1,6 +1,7 @@
 #include "huffman_string.h"
 #include <cassert>
 #include <sstream>
+#include <algorithm>
 #include <iostream>
 
 //#define MY_DEBUG
