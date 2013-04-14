@@ -8,7 +8,7 @@
 
 struct HuffmanNode
 {
-	unsigned char symbol;
+	unsigned char symbol; 
 	unsigned int priority;
 	HuffmanNode *left;
 	HuffmanNode *right;
