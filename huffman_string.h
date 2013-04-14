@@ -32,7 +32,7 @@ struct HuffmanTree
 };
 
 
-// NOTE: The std::priority_queue is used here because its implementation uses container's
+// NOTE: The std::priority_queue is *NOT* used here because its implementation uses container's
 //       push_back() method to add elements, which means new elements are always added at the
 //       back of the container, then adjusted up using heap. But here, I expect the new element 
 //       can be added from front and then adjusted down, by which elements can keep stable order.
