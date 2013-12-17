@@ -1,0 +1,153 @@
+﻿<html lang="zh-CN">
+<head>   
+    <title>豆瓣FM - Like</title>
+    <script type="text/javascript" src="jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="song.js"></script> 
+    <script type="text/javascript">
+    var SongPretty = 
+    {
+        song_list_ : null,
+        sort_key_: "name",
+        
+        set_sort_key: function(key)
+        {
+            this.sort_key_ = key;
+        },
+        
+        song_cmp: function(objA, objB)
+        {
+            var a, b;
+            switch(SongPretty.sort_key_)
+            {
+            case "name":
+                a = objA.name;
+                b = objB.name;
+                break;
+            case "album":
+                a = objA.album;
+                b = objB.album;
+                break;
+            case "singer":
+                a = objA.singer;
+                b = objB.singer;
+                break;
+            }
+            if(a > b)    return 1;
+            if(a < b)    return -1;
+            return 0;
+        },
+        
+        loadSongs: function ()
+        {
+            this.song_list_ = song_list;
+            this.buildTable(song_list);
+        },
+        
+        sortSongs: function (sort_key)
+        {
+            this.set_sort_key(sort_key);
+            this.song_list_.sort(this.song_cmp);
+            this.buildTable(this.song_list_);
+        },
+        
+        buildTable: function (songs)
+        {
+            var $table = $('#SongsTable');
+            $table.hide();
+            $('tr.line').remove();
+            for(var i in songs){
+                var a = songs[i];
+                $('<tr>').addClass('line')
+                        .append($('<td>').addClass('name').text(a.name))
+                        .append($('<td>').addClass('album').text(a.album))
+                        .append($('<td>').addClass('singer').text(a.singer))
+                        .hover(
+                            function(){ $(this).addClass('hover')},
+                            function(){ $(this).removeClass('hover')}
+                        ).appendTo($table);
+            }
+            $('<tr>').addClass('line')
+                     .append($('<td>').attr('colspan', '3').text('Total Count: '+songs.length))
+                     .appendTo($table);
+            $table.show();
+        }
+    };
+    $(document).ready(function()
+    {
+        
+        SongPretty.loadSongs();
+        $('.header td').each(function(column)
+        {
+            var $header = $(this);
+            $header.addClass('clickable')
+                    .hover(
+                        function() {
+                            $header.addClass('hover');
+                        },
+                        function() {
+                            $header.removeClass('hover');
+                        })
+                    .click(
+                        function()
+                        {
+                            var key = $.trim($header.attr('class').replace('clickable', '').replace('hover',''));
+                            SongPretty.sortSongs(key);
+                        });
+        });
+    });
+    </script>
+    
+    <style type="text/css">
+        #SongsTable
+        {
+            border-collapse:collapse;
+            text-align:left;
+            display:none;
+            font-family:Arial, Veranda;
+            font-size:10pt;
+            width:80%;
+            margin-top:20px;
+            margin-left:10%;
+            margin-right:10%;
+        }
+        #SongsTable td
+        {
+            border:1px solid #aaa;
+            padding:4px;
+        }
+        #SongsTable .line td
+        {
+            padding-left:5%;
+        }
+        #SongsTable .header td
+        {
+            border-bottom:1px solid #3d580b;
+            background-color:#7EAD27;
+            color:#fff;
+            padding:10px 0px;
+            text-align:center;
+        }
+        .hover
+        {
+            background-color:#FFEB86;
+        }
+        .clickable
+        {
+            cursor:hand;
+        }
+            
+    </style>
+</head>
+<body>
+    <h1>Douban Liked Songs</h1>
+    <div id="SongsPanel">
+        <table id="SongsTable">
+            <tr class="header">
+                <td class="name"><a href='#'>歌曲名</a></td>
+                <td class="album"><a href='#'>专辑</a></td>
+                <td class="singer"><a href='#'>歌手</a></td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

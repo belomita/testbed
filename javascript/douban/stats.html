@@ -1,0 +1,107 @@
+﻿<html lang="zh-CN">
+<head>   
+    <title>豆瓣FM - Like - Statistics</title>
+    <script type="text/javascript" src="jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="stats.js"></script>
+    <script type="text/javascript">
+    
+    function object_to_atrray(obj)
+    {
+        var keys = [];
+        for(var key in obj){
+            keys.push(key);
+        }
+        return keys;
+    }
+    
+    $(document).ready(function()
+    {
+        $('#total').text(stats.total); // total songs count
+        
+        var counter = 0;
+        var singer_list = stats.singer;
+        var $singerPanel = $('#singer_list');
+        for(var singer in singer_list){
+            var $link = $('<a href="#">').text(singer + " (" + singer_list[singer].total + ")").attr('alt', singer);
+            $('<li>').append($link).appendTo($singerPanel);
+            counter++;
+        }
+        $('#singer_count').text(counter);
+        
+        $('li a', $singerPanel).each(
+            function() {
+                $(this).click(
+                        function(){
+                                $songPanel = $('#song_list');
+                                $('#song_list > li').remove();
+                                var singerName = $(this).attr('alt');
+                                var songs = singer_list[singerName].list;
+                                for(var i in songs) {
+                                    $('<li>').text(songs[i]).appendTo($songPanel);
+                                }
+                        });
+            });
+
+        var album_list = stats.album;
+        counter = 0;        
+        var $albumPanel = $('#album_list');
+        for(var album in album_list){
+            var $link = $('<a href="#">').text(album + " (" + album_list[album].total + ")").attr('alt', album);
+            $('<li>').append($link).appendTo($albumPanel);
+            counter++;
+        }
+        $('#album_count').text(counter);
+        
+        $('li a', $albumPanel).each(
+            function() {
+                $(this).click(
+                    function(){
+                            $('#song_list > li').remove();
+                            $songPanel = $('#song_list');
+                            var albumName = $(this).attr('alt');
+                            var songs = album_list[albumName].list;
+                            for(var i in songs) {
+                                $('<li>').text(songs[i]).appendTo($songPanel);
+                            }
+                    });
+            });
+    });
+    </script>
+    <style type="text/css">
+        #statsPanel
+        {
+            width: 50%;
+            float: left;
+        }
+        #songPanel
+        {
+            width: 49%;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Douban Liked Songs Statistics</h1>
+    <div id="statsPanel">
+        <div>Total Songs Count: <span id="total"></span></div>
+        <div>
+            <p>All albums: <span id="album_count"></span></p>
+            <ul id="singer_list">
+            
+            </ul>
+        </div>
+        <div>
+            <p>All Singers:  <span id="singer_count"></span></p>
+            <ul id="album_list">
+            
+            </ul>
+        </div>
+    </div>
+    
+    <div id="songPanel">
+        <ul id="song_list">
+        
+        </ul>
+    </div>
+</body>
+</html>

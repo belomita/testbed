@@ -1,0 +1,125 @@
+﻿<html lang="zh-CN">
+<head>   
+    <title>豆瓣FM - Like - Statistics</title>
+    <script type="text/javascript" src="jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="stats2.js"></script>
+    <script type="text/javascript">
+    
+    var singer_map= [];
+    var album_map= [];
+    
+    $(document).ready(function()
+    {
+        $('#total').text(stats.total); // total songs count
+        
+        var singer_list = stats.singer;
+        var $singerPanel = $('#singer_list');
+        for(var i in singer_list){
+            var item = singer_list[i];
+            var $link = $('<a href="#">').text(item.name + " (" + item.count + ")").attr('alt', item.name);
+            $('<li>').append($link).appendTo($singerPanel);
+            
+            singer_map[item.name] = item.songs;
+        }
+        $('#singer_count').text(singer_list.length);
+        
+        $('li a', $singerPanel).each(
+            function() {
+                $(this).click(
+                        function(){
+                                $songPanel = $('#song_list');
+                                $('#song_list > li').remove();
+                                var singerName = $(this).attr('alt');
+                                var songs = singer_map[singerName];
+                                for(var i in songs) {
+                                    $('<li>').text(songs[i]).appendTo($songPanel);
+                                }
+                        });
+            });
+
+        var album_list = stats.album;
+        var $albumPanel = $('#album_list');
+        for(var i in album_list){
+            var item = album_list[i];
+            var $link = $('<a href="#">').text(item.name + " (" + item.count + ")").attr('alt', item.name);
+            $('<li>').append($link).appendTo($albumPanel);
+            
+            album_map[item.name] = item.songs;
+        }
+        $('#album_count').text(album_list.length);
+        
+        $('li a', $albumPanel).each(
+            function() {
+                $(this).click(
+                    function(){
+                            $('#song_list > li').remove();
+                            $songPanel = $('#song_list');
+                            var albumName = $(this).attr('alt');
+                            var songs = album_map[albumName];
+                            for(var i in songs) {
+                                $('<li>').text(songs[i]).appendTo($songPanel);
+                            }
+                    });
+            });
+            
+        $('#toggler_singer').toggle(
+            function(){
+                $('#singer_list').slideUp();
+                $(this).text('show');
+            },
+            function(){
+                $('#singer_list').slideDown(); 
+                $(this).text('hide');
+            }
+        );
+        
+        $('#toggler_album').toggle(
+            function(){
+                $('#album_list').slideUp();
+                $(this).text('show');
+            },
+            function(){
+                $('#album_list').slideDown(); 
+                $(this).text('hide');
+            }
+        );
+    });
+    </script>
+    <style type="text/css">
+        #statsPanel
+        {
+            width: 50%;
+            float: left;
+        }
+        #songPanel
+        {
+            width: 49%;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Douban Liked Songs Statistics</h1>
+    <div id="statsPanel">
+        <div>Total Songs Count: <span id="total"></span></div>
+        <div>
+            <p>All Singers: <span id="singer_count"></span>&nbsp;&nbsp;&nbsp;<a id="toggler_singer" href="#">hide</a></p>
+            <ul id="singer_list">
+            
+            </ul>
+        </div>
+        <div>
+            <p>All Albums:  <span id="album_count"></span>&nbsp;&nbsp;&nbsp;<a id="toggler_album"  href="#">hide</a></p>
+            <ul id="album_list">
+            
+            </ul>
+        </div>
+    </div>
+    
+    <div id="songPanel">
+        <ul id="song_list">
+        
+        </ul>
+    </div>
+</body>
+</html>
