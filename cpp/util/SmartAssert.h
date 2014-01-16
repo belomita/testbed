@@ -1,162 +1,155 @@
-#ifndef _SMART_ASSERT_H_
-#define _SMART_ASSERT_H_
+#ifndef SMART_ASSERT_HEADER_FROM_CORE_INCLUDED
+#define SMART_ASSERT_HEADER_FROM_CORE_INCLUDED
 
 #include <string>
+#include <vector>
+#include <exception>
 #include <sstream>
-#include <ostream>
-#include <algorithm>
-#include <stdexcept>
 
-namespace utility
-{
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// SMART_ASSERT - redesign of ideas, described by Andrei Alexandrescu and
+// John Torjo in.
+// http://www.cuj.com/documents/s=8464/cujcexp0308alexandr/cujcexp0308alexandr.html
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// ValuePair stores (variable_name, value).
-typedef std::pair<std::string, std::string> ValuePair;
-typedef std::vector<ValuePair> ValuesArray;
-
-class AssertContext
-{
-public:
-    // Where the assertion locates: filename & line number.
-    std::string GetFilename() const
-    {
-        return filename_;
-    }
-
-    void SetFilename(const std::string& filename)
-    {
-        filename_ = filename;
-    }
-
-    int GetLineNumber() const
-    {
-        return line_number_;
-    }
-    void SetLineNumber(const int line_number)
-    {
-        line_number_ = line_number;
-    }
-
-    // Get/ set the expression to be asserted.
-    void SetExpression( const std::string & expression)
-    {
-        expression_ = expression;
-    }
-    const std::string & GetExpression() const
-    {
-        return expression_;
-    }
-
-    const ValuesArray & GetValuesArray() const
-    {
-        return val_array_;
-    }
-
-    // Adds one variable name and its corresponding value.
-    void AddValue(const std::string & variable_name,
-                  const std::string & value)
-    {
-        val_array_.push_back(ValuePair(variable_name, value));
-    }
-
-    void Print(std::ostream& out)
-    {
-        out << "ASSERTION FAILED in "
-            << filename_ << ":" << line_number_ << ":" << std::endl;
-        out << "> Expression: \'" << expression_ << "\'" << std::endl;
-
-        if (val_array_.size() > 0)
-        {
-            out << "> Values:" << std::endl;
-            std::for_each(val_array_.begin(), val_array_.end(),
-            [&](ValuePair pair)
-            {
-                out << "    " << pair.first
-                    << " = " << pair.second << std::endl;
-            });
-        }
-    }
-
-protected:
-    std::string filename_;
-    int line_number_;
-    std::string expression_;
-    ValuesArray val_array_;
+enum EAssertLevel{
+	lvl_warn,						// just logging
+	lvl_error,						// throw exception
+	lvl_fatal,						// full logging and aborting
+	lvl_total  
 };
 
-class Assert
-{
-protected:
-    AssertContext context_;
+class AssertContext{
 public:
-    Assert(const std::string& expression)
-        : SMART_ASSERT_A(*this), SMART_ASSERT_B(*this)
-    {
-        context_.SetExpression(expression);
-    }
+	AssertContext();
 
-    Assert& SMART_ASSERT_A; // clever macro A
-    Assert& SMART_ASSERT_B; // clever macro B
+	void					setLevel( const EAssertLevel );
+	EAssertLevel			getLevel() const;
+	void					setFile( const std::string& );
+	const std::string&		getFile() const;
+	void					setLine( const unsigned int );
+	unsigned int 			getLine() const;
+	void					setDesc( const std::string& );
+	const std::string&		getDesc() const;
+	void					setExpr( const std::string& );
+	const std::string&		getExpr() const;
 
-    // Print out result
-    template <typename T>
-    Assert& AddValue(T val, const std::string& variable_name)
-    {
-        std::ostringstream ss;
-        ss << val;
-        context_.AddValue(variable_name, ss.str());
-        return *this;
-    }
+	typedef std::pair<std::string, std::string>	ValueAndString_t;
+	typedef std::vector<ValueAndString_t>		ValsArray_t;
 
-    // For printing out line number, function, etc.
-    Assert& SetContext(const std::string& filename, const int line)
-    {
-        context_.SetFilename(filename);
-        context_.SetLineNumber(line);
-        return *this;
-    }
+	void					addValue( const std::string& name, const std::string& value );
+	const ValsArray_t&		getValues() const;
 
-    AssertContext GetContext()
-    {
-        return context_;
-    }
+	// return user-friendly assert message
+	const std::string		getMsg() const;
 
-    void msg(const std::string& msg)
-    {
-        context_.Print(std::cout);
-        std::cout << msg << std::endl;
-    }
+protected:
+	EAssertLevel			m_level;
+	std::string 			m_file;
+	unsigned int 			m_line;
+	std::string 			m_desc;
+	std::string 			m_expr;
+	ValsArray_t				m_values;	
 };
 
-// Make an assertion
-static Assert make_assert(const std::string& expression)
+
+// as usual exception, but keep context of assertion 
+struct AssertException : public std::exception {
+
+	AssertException( const AssertContext& );
+	virtual 				~AssertException() throw();
+
+	virtual const char* 	what() const throw();
+protected:
+	AssertContext			m_context;
+};
+
+// Helper for unrolling complex SMART_ASSERT macroses
+class SmartAssert
 {
-    return Assert(expression);
-}
+public:
+	SmartAssert( const std::string& expr ):
+	  SMART_ASSERT_A( *this ),SMART_ASSERT_B( *this )
+	  {
+		  m_context.setExpr( expr );
+	  }
 
-} // namespace utility
+	  ~SmartAssert();
 
+	  SmartAssert& 	setContext( const std::string& file, const unsigned int line );
+	  SmartAssert& 	setExpr( const std::string& );
 
-// Must define the macros afterwards
-// Clever macros
+	  template<class type>
+	  SmartAssert& 	addValue( const std::string& name, const type& value ){
+		  std::ostringstream ss;
+		  ss << value;
+		  m_context.addValue( name, ss.str());
+		  
+		  return ( *this );
+	  }
+
+	  SmartAssert& 	warn( const std::string& );    
+	  SmartAssert& 	error( const std::string& );
+	  SmartAssert& 	fatal( const std::string& );
+
+	  // NULL as callback will disable handling specified level of assertions  
+	  typedef void (*HandlerCallback_t)( const AssertContext& ); 
+	  static void		setHandler(	EAssertLevel, HandlerCallback_t );
+
+private:
+	static void 	defaultWarnHandler( const AssertContext& );
+	static void 	defaultErrorHandler( const AssertContext& );
+	static void 	defaultFatalHandler( const AssertContext& ); 
+
+public:
+	SmartAssert& SMART_ASSERT_A;
+	SmartAssert& SMART_ASSERT_B;
+
+private:
+	AssertContext 			m_context;
+	static HandlerCallback_t	m_callbacks[lvl_total];
+}; // class Assert_c
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// These macroses will help us to unfold complex assertions, like
+// SMART_ASSERT( a >= 0 )( a ).warn( "A must be >=0" );
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 #define SMART_ASSERT_A(x) SMART_ASSERT_OP(x, B)
 #define SMART_ASSERT_B(x) SMART_ASSERT_OP(x, A)
 
-// Clever macro recursion
 #define SMART_ASSERT_OP(x, next) \
-SMART_ASSERT_A.AddValue((x), #x).SMART_ASSERT_ ## next
+	SMART_ASSERT_A.addValue( #x, (x) ).SMART_ASSERT_ ## next
 
-#define MAKE_ASSERT(expr)\
-    utility::make_assert(#expr).SetContext(__FILE__, __LINE__).SMART_ASSERT_A
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+#ifndef NDEBUG
+#define SMART_ASSERT(expr) \
+	if ( expr ) \
+		{ ; } \
+	else \
+		SmartAssert( #expr ).setContext( __FILE__, __LINE__ ).SMART_ASSERT_A
 
-#define SMART_ASSERT(expr, msg, ...)       \
-    if ( (expr) ) ;             \
-    else                        \
-    {                           \
-        utility::AssertContext _context##__LINE__ = \
-            MAKE_ASSERT(expr) __VA_ARGS__ .GetContext(); \
-        _context##__LINE__.Print(std::cout);   \
-        throw std::runtime_error(msg);     \
-    }
+#define SMART_VERIFY(expr) \
+	if ( expr ) \
+		{ ; } \
+	else \
+		SmartAssert( #expr ).setContext( __FILE__, __LINE__ ).SMART_ASSERT_A
 
-#endif
+#else
+#define SMART_ASSERT(expr) \
+	if ( true ) \
+		{;} \
+	else \
+		SmartAssert("").SMART_ASSERT_A
+
+#define SMART_VERIFY(expr) \
+	if ( true ) \
+		{ (void)(expr); } \
+	else \
+		SmartAssert("").SMART_ASSERT_A
+
+#endif // ifndef NDEBUG
+
+#define  ENSURE SMART_ASSERT
+#endif /* SMART_ASSERT_HEADER_FROM_CORE_INCLUDED */
+
