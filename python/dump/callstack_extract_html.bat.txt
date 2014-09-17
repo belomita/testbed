@@ -1,0 +1,24 @@
+set path=%path%;C:\Python27
+cd /d  %~dp0
+
+set OriginDir=%1
+set DumpDir=%OriginDir%
+set DumpAnalyzeDir=0915_Analyze_[2014-09-16][11-42-26]
+set WebServerPath=C:\Program Files\Apache Group\Apache2\htdocs\
+
+python dump_processer.py %DumpDir% %DumpAnalyzeDir%  %DumpDir%_crash.html %DumpDir%_mac.html
+
+if exist index.html copy /Y index.html "%WebServerPath%"
+if exist %DumpDir%_crash.html.js move /Y %DumpDir%_crash.html.js "%WebServerPath%"
+if exist %DumpDir%_mac.html.js move /Y %DumpDir%_mac.html.js "%WebServerPath%"
+if exist %DumpDir%_crash.html move /Y %DumpDir%_crash.html "%WebServerPath%"
+if exist %DumpDir%_mac.html move /Y %DumpDir%_mac.html "%WebServerPath%"
+
+for /f %%i in ("%DumpAnalyzeDir%") do (
+	set filep=%%~dpi
+	set filen=%%~nxi
+	
+)	
+if not exist "%WebServerPath%%filen%" mkdir "%WebServerPath%%filen%"
+xcopy /E /Q /Y %DumpAnalyzeDir% "%WebServerPath%%filen%"
+pause

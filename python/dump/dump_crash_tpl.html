@@ -1,0 +1,131 @@
+<html lang="zh-CN">
+<head>   
+    <title>Dump Analyze Statistics</title>
+    <script type="text/javascript" src="jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="%s"></script>
+    <script type="text/javascript">
+    
+    $(document).ready(function()
+    {
+		stats = LoadStats();
+        $('#total').text(stats.Total); // total songs count
+        $('#analyzeType').text(stats.Type)
+        $('#zipPath').text(stats.ZipPath)
+        $('#txtPath').text(stats.TextPath)
+		
+        var counter = 0;
+        var entries = stats.Entries;
+        var $dumpPanel = $('#dump_list');
+        for(var i in entries){
+			var dump = entries[i];
+			var id = 'dump_' + i;
+			var $entry = $('<div class="entry" id=' + id + '>');
+			$entry.append($('<div class="fieldName">').text('Crash Address: ' + dump.CrashAddress));
+			$entry.append($('<div class="fieldName">').text(' Count: ' + dump.Count));
+			$link = $('<a href="#" class="fieldName">').text('View All');
+			$link.appendTo($entry);
+			$('<div class="clear">').appendTo($entry);
+			
+			var $subentries = $('<div class="subEntries">');
+			$entry.append($subentries);
+			
+			$link.toggle(
+				function(){
+					$(this).next().next().show(); 
+					$(this).text('Hide');
+				},
+				function(){
+					$(this).next().next().hide();
+					$(this).text('View All');
+				}
+			);
+			for(var j in dump.Entries) {
+				var sub = dump.Entries[j]
+				$sub = $('<div class="subEntry">');
+				$('<div>').append($('<div class="subfieldName">').text('DumpFile: ')).append($('<span>').text(sub.DumpFile)).appendTo($sub);
+				$('<div>').append($('<div class="subfieldName">').text('Zip File: ')).append($('<span>').text(sub.ZipFile)).appendTo($sub);
+				$('<div>').append($('<div class="subfieldName">').text('Text File: '))
+						  .append($('<a href="' +  stats.TextPath + "/" + sub.TxtFile + '">').text(sub.TxtFile))
+						  .appendTo($sub);
+				$('<div>').append($('<div class="subfieldName">').text('Mac Address: ')).append($('<span>').text(sub.MacAddress)).appendTo($sub);
+				$('<div>').append($('<div class="subfieldName">').text('Problem Class: ')).append($('<span>').text(sub.ProblemClass)).appendTo($sub);
+				$callstacklink = $('<a href="#">').text('View CallStack').toggle(
+					function(){
+						$(this).next().show(); 
+						$(this).text('Hide CallStack');
+					},
+					function(){
+						$(this).next().hide();
+						$(this).text('View ClassStack');
+					}
+				);
+				$callstacklink.appendTo($sub);
+				$callstack = $('<div>').append($('<pre>').text(sub.StackText));
+				$callstack.hide();
+				$callstack.appendTo($sub);
+				$subentries.append($sub);
+			}
+			$subentries.hide();
+			$dumpPanel.append($entry);
+        }
+    });
+    </script>
+    <style type="text/css">
+		body {font-family: Segoe UI;}
+		.clear {
+		  clear: both;
+		}
+        #dump_list
+        {
+            margin: 10px;
+        }
+		.entry
+		{
+			border:grey solid thin;
+			padding: 10px;
+			margin: 5px;
+		}
+		.entryhead
+		{
+			float:inherit;
+		}
+		.subEntry
+		{
+			padding: 5px;
+			float:none;
+			border-bottom:grey solid thin;
+			margin: 5px;
+		}
+
+		.subEntries
+		{
+			border:grey solid thin;
+			height: 600px;
+			overflow:auto
+		}
+		.fieldName
+		{
+			width: 160px;
+			float: left;
+		}
+		.subfieldName
+		{
+			width: 150px;
+			float: left;
+		}
+    </style>
+</head>
+<body>
+    <h1>Dump Analyze Statistics</h1>
+    <div id="statsPanel">
+        <div><span class="fieldName">Dump Total Count: </span><span id="total"></span></div>
+		<div><span class="fieldName">Dump Analyze Type: </span><span id="analyzeType"></span></div>
+		<div><span class="fieldName">Dump Zip Path: </span><span id="zipPath"></span></div>
+		<div><span class="fieldName">Dump Text Path: </span><span id="txtPath"></span></div>
+        <div id="dump_list">
+
+        </div>
+    </div>
+
+</body>
+</html>
